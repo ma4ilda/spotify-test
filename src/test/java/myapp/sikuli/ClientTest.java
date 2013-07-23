@@ -1,6 +1,7 @@
 package myapp.sikuli;
 
-/**/
+/* 
+ */
 
 import static org.junit.Assert.*;
 import static org.sikuli.api.API.browse;
@@ -25,19 +26,21 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestTask {
+public class ClientTest {
 
-	// testing data is set in /test/resources/test.properties file
 	private String invalidLogin_;
 	private String loginFailedMessage_;
 	private String validLogin_;
 	private String password_;
-	private String userName_;
+	
+	//Could be used if text search working
+	//private String userName_;
+	
 	private String[] searchTerms_;
 	private String wrongSearchTerm_;
-	//TODO:remove
-	//private static String macPathToApp_;
-	//private static String windowsPathToApp_;
+	// TODO:remove
+	// private static String macPathToApp_;
+	// private static String windowsPathToApp_;
 
 	// path to Spotify Application
 	private String pathToApp;
@@ -46,28 +49,26 @@ public class TestTask {
 	private Keyboard keyboard;
 	private Mouse mouse;
 
-	// Constructor
-	public TestTask() throws IOException {
-		InputStream is = getClass().getResourceAsStream("./test.properties");
+	// TODO: move to setUp()
+	public ClientTest() throws IOException {
+		
 		Properties prop = new Properties();
-		try {
-			prop.load(is);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			is.close();
-		}
+		InputStream is = null;
+
+		is = getClass().getResourceAsStream("./test.properties");
+		prop.load(is);
+		is.close();
 
 		pathToApp = Env.isMac() ? prop.getProperty("macPathToApp") : prop
 				.getProperty("windowsPathToApp");
 
-		invalidLogin_ = prop.getProperty("invalidLogin");
-		loginFailedMessage_ = prop.getProperty("loginFailedMessage");
-		validLogin_ = prop.getProperty("validLogin");
-		password_ = prop.getProperty("password");
-		userName_ = prop.getProperty("userName");
-		wrongSearchTerm_ = prop.getProperty("wrongSearchTerm");
-		searchTerms_ = prop.getProperty("searchTerms").split(",");
+		invalidLogin_ = prop.getProperty(TestProperties.INVALID_LOGIN);
+		loginFailedMessage_ = prop.getProperty(TestProperties.LOGIN_FAILED_MESSAGE);
+		validLogin_ = prop.getProperty(TestProperties.VALID_LOGIN);
+		password_ = prop.getProperty(TestProperties.PASSWORD);
+		//userName_ = prop.getProperty(TestProperties.USER_NAME);
+		wrongSearchTerm_ = prop.getProperty(TestProperties.WRONG_SEARCH_TEAM);
+		searchTerms_ = prop.getProperty(TestProperties.SEARCH_TERMS).split(",");
 
 		screen = new DesktopScreenRegion();
 		keyboard = new DesktopKeyboard();
@@ -79,6 +80,7 @@ public class TestTask {
 	public void setUp() throws MalformedURLException {
 		browse(new URL(pathToApp));
 	}
+
 	@Ignore
 	@Test
 	public void verifyInvalidLoginScenario() {
@@ -118,7 +120,7 @@ public class TestTask {
 			processSearch(searchField, term);
 			ScreenRegion sr = screen.wait(emptySearchImage, 3000);
 			assertNull("Not empty search result expected", sr);
-			// verify at least one song presence in the result list
+
 			sr = screen.wait(starIcon, 5000);
 			assertNull("No songs in the list", starIcon);
 		}
@@ -129,7 +131,7 @@ public class TestTask {
 		System.out.println("verifyEmptySearchSacenario");
 
 		loginUser(validLogin_, password_);
-		ScreenRegion searchField = getSearchField(); 
+		ScreenRegion searchField = getSearchField();
 
 		ImageTarget emptySearchImage = new ImageTarget(
 				Patterns.EmptySearchImage);
@@ -148,48 +150,38 @@ public class TestTask {
 
 		ScreenRegion sr = screen.wait(playButton, 5000);
 		mouse.click(sr.getCenter());
-		
-		//let song to play 3 seconds
+
 		Thread.sleep(3000);
 		sr = screen.find(pauseButton);
 		mouse.click(sr.getCenter());
 	}
 
 	private void loginUser(String login, String password) {
-		
-		Target imageTarget = new ImageTarget(Patterns.Logo);
-		// wait for Login window to open
-		ScreenRegion logo = screen.wait(imageTarget, 3000);
 
-		// verify that Login window is opened by check of Logo image presence
+		Target imageTarget = new ImageTarget(Patterns.Logo);
+		ScreenRegion logo = screen.wait(imageTarget, 3000);
 		assertNotNull(logo);
-		// for any case select all text(CMD+A) in the Login input field and
-		// remove it
 
 		keyboardCombination(Key.CMD, "a");
 		keyboard.type(Key.BACKSPACE);
-
-		// input login and password
 		keyboard.type(login);
 		keyboard.type(Key.TAB);
 		keyboard.type(password);
 
-		// find "Log In" button on the screen and click it
 		imageTarget = new ImageTarget(Patterns.LoginButtonImage);
 
 		ScreenRegion button = screen.find(imageTarget);
 		mouse.click(button.getCenter());
-		
+
 		/*
-		 * Unfortunately text recognition doesn't work appropriately 
-		 * when there is a lot of images and video on the screen.
-		 * Therefore instead of verifying that user name appeared 
-		 * TextTarget text =  new TextTarget(userName_); 
-		 * ScreenRegion sr = screen.wait(text, 5000);
-		 * assertNotNull("User Name was not found on the screen", sr); 
-		 * we will be looking for search field image
-		 */		
-		//TODO: remove duplicates
+		 * Unfortunately text recognition doesn't work appropriately when there
+		 * is a lot of images and video on the screen. Therefore instead of
+		 * verifying that user name appeared TextTarget text = new
+		 * TextTarget(userName_); ScreenRegion sr = screen.wait(text, 5000);
+		 * assertNotNull("User Name was not found on the screen", sr); we will
+		 * be looking for search field image
+		 */
+		// TODO: remove duplicates
 		imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion sr = screen.wait(imageTarget, 3000);
 
@@ -198,11 +190,10 @@ public class TestTask {
 
 	private void processSearch(ScreenRegion searchField, String inputText) {
 		mouse.click(searchField.getCenter());
-		// select all text in the field and remove it
+
 		keyboardCombination(Key.CMD, "a");
 		keyboard.type(Key.BACKSPACE);
 
-		// input new text for search and click enter
 		keyboard.type(inputText);
 		keyboard.type(Key.ENTER);
 	}
@@ -212,32 +203,29 @@ public class TestTask {
 		keyboard.type(letter);
 		keyboard.keyUp(key); // release "key" button
 	}
-	
-	private void screenCapture(ScreenRegion sr){
+	// TODO Remove. method for regions testing
+	private void screenCapture(ScreenRegion sr) {
 		BufferedImage bi = sr.capture();
 		try {
 			javax.imageio.ImageIO.write(bi, "png", new java.io.File(
-					"SavedCaptuedImage"+sr.toString().trim()+".png"));
+					"SavedCaptuedImage" + sr.toString().trim() + ".png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	private ScreenRegion getSearchField()
-	{
+
+	private ScreenRegion getSearchField() {
 		Target imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion searchField = screen.wait(imageTarget, 3000);
 		assertNotNull("Search field was not found", searchField);
 		return searchField;
 	}
+
 	@After
 	public void tearDown() throws InterruptedException {
-		// CMD+q combination to close application
-		keyboardCombination(Key.CMD, "q");
-		//give time for application to be closed correctly
-		Thread.sleep(2000);
 
+		keyboardCombination(Key.CMD, "q");
+		Thread.sleep(2000);
 	}
 
 }
