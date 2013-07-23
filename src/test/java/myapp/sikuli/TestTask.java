@@ -12,17 +12,13 @@ import org.sikuli.api.robot.Keyboard;
 import org.sikuli.api.robot.Mouse;
 import org.sikuli.api.robot.desktop.DesktopKeyboard;
 import org.sikuli.api.robot.desktop.DesktopMouse;
-import org.sikuli.api.visual.Canvas;
-import org.sikuli.api.visual.DesktopCanvas;
 
-
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.InterruptedException;;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
-
 
 import org.junit.After;
 import org.junit.Before;
@@ -82,7 +78,7 @@ public class TestTask {
 	public void setUp() throws MalformedURLException {
 		browse(new URL(pathToApp));
 	}
-@Ignore
+
 	@Test
 	public void verifyInvalidLoginScenario() {
 		Target imageTarget = new ImageTarget(Patterns.Logo);
@@ -99,15 +95,15 @@ public class TestTask {
 		ScreenRegion sr = screen.wait(imageTarget, 3000);
 		assertNotNull(sr);
 		TextTarget text = new TextTarget(loginFailedMessage_);
-		
+
 		sr = screen.find(text);
-		
+
 		assertNotNull(sr);
-		//TODO:remove
+		// TODO:remove
 		mouse.click(sr.getCenter());
 
 	}
-	
+
 	@Test
 	public void verifyValidLoginSacenario() {
 		Target imageTarget = new ImageTarget(Patterns.Logo);
@@ -117,20 +113,27 @@ public class TestTask {
 		// verify that Login window is opened by check of Logo image presence
 		assertNotNull(logo);
 		loginUser(validLogin_, password_);
-		
-		/*looks like text recognition doesn't work in sikuli so instead of 
-		 verifying user was logged in and user name appeared		
-		TextTarget text = new TextTarget(userName_);
-		ScreenRegion sr = screen.wait(text, 5000);
-		assertNotNull("User Name was not found on the screen", sr);
-		will be looking for search field image
+		BufferedImage bi = screen.capture();
+		try {
+			javax.imageio.ImageIO.write(bi, "png", new java.io.File(
+					"SavedCaptuedImage.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		/*
+		 * looks like text recognition doesn't work in sikuli so instead of
+		 * verifying user was logged in and user name appeared TextTarget text =
+		 * new TextTarget(userName_); ScreenRegion sr = screen.wait(text, 5000);
+		 * assertNotNull("User Name was not found on the screen", sr); will be
+		 * looking for search field image
 		 */
 		imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion sr = screen.wait(imageTarget, 3000);
 		assertNotNull("Search field was not found", sr);
-		
-		//TODO:remove
-		//mouse.click(sr.getCenter());
+
+		// TODO:remove
+		// mouse.click(sr.getCenter());
 
 	}
 
@@ -147,28 +150,28 @@ public class TestTask {
 		imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion searchField = screen.wait(imageTarget, 3000);
 		assertNotNull("Search field was not found", searchField);
-		
-		ImageTarget emptySearchImage = new ImageTarget(Patterns.EmptySearchImage);
+
+		ImageTarget emptySearchImage = new ImageTarget(
+				Patterns.EmptySearchImage);
 		ImageTarget starIcon = new ImageTarget(Patterns.StarIcon);
-		
-		for(int i = 0; i < searchTerms_.length; i++ )
-		{
+
+		for (int i = 0; i < searchTerms_.length; i++) {
 			String term = searchTerms_[i];
 			processSearch(searchField, term);
 			ScreenRegion sr = screen.wait(emptySearchImage, 3000);
 			assertNull("Not empty search result expected", sr);
-			//verify at least one song precense in the result list
+			// verify at least one song precense in the result list
 			sr = screen.wait(starIcon, 5000);
 			assertNull("No songs in the list", starIcon);
-			
-			//TODO:Remove
+
+			// TODO:Remove
 			mouse.click(sr.getCenter());
 		}
 	}
 
 	@Test
 	public void verifyEmptySearchSacenario() {
-	System.out.println("verifyEmptySearchSacenario");
+		System.out.println("verifyEmptySearchSacenario");
 		Target imageTarget = new ImageTarget(Patterns.Logo);
 		// wait for Login window to open
 		ScreenRegion logo = screen.wait(imageTarget, 3000);
@@ -179,17 +182,17 @@ public class TestTask {
 		imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion searchField = screen.wait(imageTarget, 3000);
 		assertNotNull("Search field was not found", searchField);
-		
-		ImageTarget emptySearchImage = new ImageTarget(Patterns.EmptySearchImage);
+
+		ImageTarget emptySearchImage = new ImageTarget(
+				Patterns.EmptySearchImage);
 		processSearch(searchField, wrongSearchTerm_);
 		ScreenRegion sr = screen.wait(emptySearchImage, 3000);
 		assertNotNull(sr);
 	}
-	
-	
+
 	@Test
-	public void verifyPlayingSongsWorks(){
-	
+	public void verifyPlayingSongsWorks() throws InterruptedException {
+
 		Target imageTarget = new ImageTarget(Patterns.Logo);
 		// wait for Login window to open
 		ScreenRegion logo = screen.wait(imageTarget, 3000);
@@ -197,24 +200,28 @@ public class TestTask {
 		// verify that Login window is opened by check of Logo image presence
 		assertNotNull(logo);
 		loginUser(validLogin_, password_);
+
 		imageTarget = new ImageTarget(Patterns.SearchFieldImage);
 		ScreenRegion searchField = screen.wait(imageTarget, 3000);
 		assertNotNull("Search field was not found", searchField);
-		
+
 		Target playButton = new ImageTarget(Patterns.PlayButtonImage);
 		Target pauseButton = new ImageTarget(Patterns.PauseButtonImage);
-		
 
 		ScreenRegion sr = screen.wait(playButton, 5000);
 		mouse.click(sr.getCenter());
-		sr = screen.wait(pauseButton, 5000);
-		mouse.click(sr.getCenter());
 		
+		//let song to play 3 seconds
+		Thread.sleep(3000);
+		sr = screen.find(pauseButton);
+		mouse.click(sr.getCenter());
+
 	}
 
 	private void loginUser(String login, String password) {
-		// for any case select all text(CMD+A) in the Login input field and remove it
-	
+		// for any case select all text(CMD+A) in the Login input field and
+		// remove it
+
 		keyboardCombimation(Key.CMD, "a");
 		keyboard.type(Key.BACKSPACE);
 
@@ -225,10 +232,11 @@ public class TestTask {
 
 		// find "Log In" button on the screen and click it
 		ImageTarget imageTarget = new ImageTarget(Patterns.LoginButtonImage);
+
 		ScreenRegion button = screen.find(imageTarget);
 		mouse.click(button.getCenter());
 	}
-	
+
 	private void processSearch(ScreenRegion searchField, String inputText) {
 		mouse.click(searchField.getCenter());
 		// select all text in the field and remove it
@@ -239,17 +247,20 @@ public class TestTask {
 		keyboard.type(inputText);
 		keyboard.type(Key.ENTER);
 	}
-	
-	private void keyboardCombimation(String key, String letter)
-	{
-		keyboard.keyDown(key); //push button "key"
-		keyboard.type(letter); 
-		keyboard.keyUp(key); //release button "key"	
+
+	private void keyboardCombimation(String key, String letter) {
+		keyboard.keyDown(key); // push button "key"
+		keyboard.type(letter);
+		keyboard.keyUp(key); // release button "key"
 	}
+
 	@After
-	public void tearDown() {
+	public void tearDown() throws InterruptedException {
 		// close application
 		keyboardCombimation(Key.CMD, "q");
+		//give time for application to be closed
+		Thread.sleep(2000);
+
 	}
 
 }
