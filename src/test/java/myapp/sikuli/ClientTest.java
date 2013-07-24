@@ -14,7 +14,7 @@ import org.sikuli.api.robot.Mouse;
 import org.sikuli.api.robot.desktop.DesktopKeyboard;
 import org.sikuli.api.robot.desktop.DesktopMouse;
 
-import java.awt.image.BufferedImage;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -34,7 +34,7 @@ public class ClientTest {
 	private String password_;
 
 	// Could be used if text search works
-	//private String userName_;
+	// private String userName_;
 
 	private String[] searchTerms_;
 	private String wrongSearchTerm_;
@@ -52,7 +52,8 @@ public class ClientTest {
 		Properties prop = new Properties();
 		InputStream is = null;
 
-		is = getClass().getResourceAsStream(TestProperties.TEST_PROPERTIES_PATH);
+		is = getClass()
+				.getResourceAsStream(TestProperties.TEST_PROPERTIES_PATH);
 		prop.load(is);
 		is.close();
 
@@ -64,14 +65,13 @@ public class ClientTest {
 				.getProperty(TestProperties.LOGIN_FAILED_MESSAGE);
 		validLogin_ = prop.getProperty(TestProperties.VALID_LOGIN);
 		password_ = prop.getProperty(TestProperties.PASSWORD);
-		//userName_ = prop.getProperty(TestProperties.USER_NAME);
+		// userName_ = prop.getProperty(TestProperties.USER_NAME);
 		wrongSearchTerm_ = prop.getProperty(TestProperties.WRONG_SEARCH_TEAM);
 		searchTerms_ = prop.getProperty(TestProperties.SEARCH_TERMS).split(",");
 
 		screen = new DesktopScreenRegion();
 		keyboard = new DesktopKeyboard();
 		mouse = new DesktopMouse();
-
 	}
 
 	@Before
@@ -94,6 +94,7 @@ public class ClientTest {
 				+ "] was not found on the screen", sr);
 	}
 
+	@Ignore
 	@Test
 	public void verifyValidLoginScenario() {
 
@@ -101,17 +102,15 @@ public class ClientTest {
 
 	}
 
+	@Ignore
 	@Test
 	public void verifySearchScenario() {
 
 		loginUser(validLogin_, password_);
-		ScreenRegion searchField = assertScreenRegionForImage(
-				Patterns.SearchFieldImage,
-				"Search field was not found on the screen", true);
 
 		for (int i = 0; i < searchTerms_.length; i++) {
 			String term = searchTerms_[i];
-			processSearch(searchField, term);
+			processSearch(term);
 			assertScreenRegionForImage(Patterns.EmptySearchImage,
 					"Not empty search result expected. Please verify ["
 							+ TestProperties.WRONG_SEARCH_TEAM
@@ -122,15 +121,13 @@ public class ClientTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void verifyEmptySearchScenario() {
 
 		loginUser(validLogin_, password_);
-		ScreenRegion searchField = assertScreenRegionForImage(
-				Patterns.SearchFieldImage,
-				"Search field was not found on the screen", true);
 
-		processSearch(searchField, wrongSearchTerm_);
+		processSearch(wrongSearchTerm_);
 		assertScreenRegionForImage(Patterns.EmptySearchImage,
 				"Magnifier image is absent", true);
 	}
@@ -140,9 +137,13 @@ public class ClientTest {
 
 		loginUser(validLogin_, password_);
 
-		ScreenRegion sr = assertScreenRegionForImage(Patterns.PlayButtonImage,
-				"'Play' button was not found on the screen", true);
-		mouse.click(sr.getCenter());
+		processSearch(searchTerms_[0]);
+		ScreenRegion sr = assertScreenRegionForImage(Patterns.StarIcon,
+				"There is no songs in the list to play", true);
+		Rectangle r = sr.getBounds();
+		ScreenRegion newRegion = new DesktopScreenRegion(r.x + r.width, r.y,
+				r.width, r.height);
+		mouse.doubleClick(newRegion.getCenter());
 
 		Thread.sleep(3000);
 
@@ -193,7 +194,10 @@ public class ClientTest {
 		return sr;
 	}
 
-	private void processSearch(ScreenRegion searchField, String inputText) {
+	private void processSearch(String inputText) {
+		ScreenRegion searchField = assertScreenRegionForImage(
+				Patterns.SearchFieldImage,
+				"Search field was not found on the screen", true);
 		mouse.click(searchField.getCenter());
 
 		keyboardCombination(Key.CMD, "a");
@@ -210,17 +214,6 @@ public class ClientTest {
 		keyboard.keyDown(key1); // push "key" button
 		keyboard.type(key2);
 		keyboard.keyUp(key1); // release "key" button
-	}
-
-	// TODO Remove. method for regions testing
-	private void screenCapture(ScreenRegion sr) {
-		BufferedImage bi = sr.capture();
-		try {
-			javax.imageio.ImageIO.write(bi, "png", new java.io.File(
-					"SavedCaptuedImage" + sr.toString().trim() + ".png"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@After
@@ -242,5 +235,4 @@ public class ClientTest {
 		}
 		Thread.sleep(1000);
 	}
-
 }
