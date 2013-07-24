@@ -11,6 +11,6 @@ public class Patterns {
 	static final URL SearchFieldImage = Patterns.class.getResource("./search.png");
 	static final URL PauseButtonImage = Patterns.class.getResource("./pause_button.png");
 	static final URL EmptySearchImage = Patterns.class.getResource("./empty_search.png");
-	static final URL StarIcon = Patterns.class.getResource("./star.png");
+	static final URL StarIcon = Patterns.class.getResource("./star_and_share.png");
 
 }

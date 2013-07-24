@@ -2,6 +2,7 @@ package myapp.sikuli;
 
 public class TestProperties {
 	
+	 static final String TEST_PROPERTIES_PATH = "./test.properties";
 	 static final String INVALID_LOGIN = "invalidLogin";
 	 static final String LOGIN_FAILED_MESSAGE = "loginFailedMessage";
 	 static final String VALID_LOGIN = "validLogin";
