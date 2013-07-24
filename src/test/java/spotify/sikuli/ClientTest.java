@@ -1,8 +1,21 @@
 package spotify.sikuli;
 
-/* 
+/**ClientTest is JUnit test case written for Spotify Client GUI-test.
+ * It uses sikuli.api library that provides image-based GUI automation functionality. 
+ * Unfortunately text and image recognition is still experimental and under development
+ * therefore it could result in a strange behavior of the ClientTest functionality.
+ * All test methods were implemented to be fully independent and separate. In this way 
+ * each method scenario could be easily changed and should not influence others.
+ * ClientTest verifies five different scenarios using set of simple sub-scenarios.
+ * - user logs in with invalid account
+ * - user logs in with valid free account
+ * - user processes a search with non-empty result
+ * - user processes a search with empty result
+ * - user plays the first available song from search result
+ * 
+ * ClientTest was tested and implemented for two versions of Windows and Mac OS operating systems. 
+ *  @author      Pukhyr Anastasiia
  */
-
 import static org.junit.Assert.*;
 import static org.sikuli.api.API.browse;
 
@@ -23,7 +36,6 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ClientTest {
@@ -46,9 +58,8 @@ public class ClientTest {
 	private Keyboard keyboard;
 	private Mouse mouse;
 
-	// TODO: move to setUp()
-	public ClientTest() throws IOException {
-
+	@Before
+	public void setUp() throws MalformedURLException, IOException {
 		Properties prop = new Properties();
 		InputStream is = null;
 
@@ -72,10 +83,6 @@ public class ClientTest {
 		screen = new DesktopScreenRegion();
 		keyboard = new DesktopKeyboard();
 		mouse = new DesktopMouse();
-	}
-
-	@Before
-	public void setUp() throws MalformedURLException {
 		browse(new URL(pathToApp));
 	}
 
@@ -83,7 +90,8 @@ public class ClientTest {
 	public void verifyInvalidLoginScenario() {
 
 		loginUser(invalidLogin_, password_);
-		URL imageURL = Env.isMac() ? Patterns.LoginFailedImage : Patterns.LoginFailedImage_Windows;
+		URL imageURL = Env.isMac() ? Patterns.LoginFailedImage
+				: Patterns.LoginFailedImage_Windows;
 
 		assertScreenRegionForImage(imageURL,
 				"Expected 'Login Failed' image was not found on the screen",
@@ -95,7 +103,6 @@ public class ClientTest {
 				+ "] was not found on the screen", sr);
 	}
 
-	@Ignore
 	@Test
 	public void verifyValidLoginScenario() {
 
@@ -103,14 +110,16 @@ public class ClientTest {
 		/*
 		 * Unfortunately text recognition doesn't work appropriately when there
 		 * is a lot of images and video on the screen. Therefore instead of
-		 * verifying that user name appeared TextTarget text = new
-		 * TextTarget(userName_); ScreenRegion sr = screen.wait(text, 5000);
-		 * assertNotNull("User Name was not found on the screen", sr); we will
-		 * be looking for search field image
+		 * verifying that user name appeared looking for presence of search
+		 * field image. TextTarget text = new TextTarget(userName_);
+		 * ScreenRegion sr = screen.wait(text, 5000);
+		 * assertNotNull("User Name was not found on the screen", sr); looking
+		 * for search field image
 		 */
+		assertScreenRegionForImage(Patterns.SearchFieldImage,
+				"Search field was not found on the screen", true);
 	}
 
-	@Ignore
 	@Test
 	public void verifySearchScenario() {
 
@@ -129,7 +138,6 @@ public class ClientTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void verifyEmptySearchScenario() {
 
@@ -140,7 +148,6 @@ public class ClientTest {
 				"Magnifier image is absent", true);
 	}
 
-	@Ignore
 	@Test
 	public void verifyPlayingSongsWorks() throws InterruptedException {
 
@@ -161,6 +168,16 @@ public class ClientTest {
 		mouse.click(sr.getCenter());
 	}
 
+	/**
+	 * Tries to find logotype on the screen specified in Patterns.Logo URL. If
+	 * logotype is found inputs user login and password using global keyboard
+	 * object. Clicks login button specified in Patterns.LoginButtonImage URL.
+	 * 
+	 * @param login
+	 *            - used for input in login field
+	 * @param password
+	 *            - used for input in password field
+	 */
 	private void loginUser(String login, String password) {
 
 		assertScreenRegionForImage(Patterns.Logo,
@@ -178,9 +195,23 @@ public class ClientTest {
 		mouse.click(button.getCenter());
 	}
 
-	private ScreenRegion assertScreenRegionForImage(URL targetURL,
+	/**
+	 * Creates ImageTarget for the given image URL and tries to find it on the
+	 * screen. If corresponding screen region was not found calls assertion
+	 * method. imageURL argument must specify absolute path to the image.
+	 * 
+	 * @param imageURL
+	 *            an absolute URL given the base location of the image
+	 * @param assertMessage
+	 *            message to be used in assert
+	 * @param NotNull
+	 *            specifies which assert method should be called (if true then
+	 *            assertNotNull, if false then assertNull)
+	 * @return screen region for the given image
+	 */
+	private ScreenRegion assertScreenRegionForImage(URL imageURL,
 			String assertMessage, boolean NotNull) {
-		ImageTarget imageTarget = new ImageTarget(targetURL);
+		ImageTarget imageTarget = new ImageTarget(imageURL);
 		ScreenRegion sr = screen.wait(imageTarget, 3000);
 
 		if (NotNull)
@@ -190,6 +221,14 @@ public class ClientTest {
 		return sr;
 	}
 
+	/**
+	 * Tries to find search field on the screen by the image URL specified in
+	 * Patterns.SearchFieldImage variable. If field was found types given
+	 * inputText and starts the search.
+	 * 
+	 * @param inputText
+	 *            term for the search
+	 */
 	private void processSearch(String inputText) {
 		ScreenRegion searchField = assertScreenRegionForImage(
 				Patterns.SearchFieldImage,
@@ -203,10 +242,20 @@ public class ClientTest {
 		keyboard.type(Key.ENTER);
 	}
 
+	/**
+	 * Types double key combination using {@link Keyboard} object. Example: CMD
+	 * + C; CTRL + V. If current OS is Windows CMD key will be changed to CTRL
+	 * 
+	 * @param key1
+	 *            first key to be hold
+	 * @param key2
+	 *            second key to be pushed
+	 */
 	private void keyboardCombination(String key1, String key2) {
 
 		if (key1.equals(Key.CMD) && !Env.isMac())
 			key1 = Key.CTRL;
+
 		keyboard.keyDown(key1); // push "key" button
 		keyboard.type(key2);
 		keyboard.keyUp(key1); // release "key" button
