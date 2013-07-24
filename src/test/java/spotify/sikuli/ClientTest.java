@@ -45,9 +45,6 @@ public class ClientTest {
 	private String validLogin_;
 	private String password_;
 
-	// Could be used if text search works
-	// private String userName_;
-
 	private String[] searchTerms_;
 	private String wrongSearchTerm_;
 
@@ -76,7 +73,6 @@ public class ClientTest {
 				.getProperty(TestProperties.LOGIN_FAILED_MESSAGE);
 		validLogin_ = prop.getProperty(TestProperties.VALID_LOGIN);
 		password_ = prop.getProperty(TestProperties.PASSWORD);
-		// userName_ = prop.getProperty(TestProperties.USER_NAME);
 		wrongSearchTerm_ = prop.getProperty(TestProperties.WRONG_SEARCH_TEAM);
 		searchTerms_ = prop.getProperty(TestProperties.SEARCH_TERMS).split(",");
 
@@ -107,15 +103,7 @@ public class ClientTest {
 	public void verifyValidLoginScenario() {
 
 		loginUser(validLogin_, password_);
-		/*
-		 * Unfortunately text recognition doesn't work appropriately when there
-		 * is a lot of images and video on the screen. Therefore instead of
-		 * verifying that user name appeared looking for presence of search
-		 * field image. TextTarget text = new TextTarget(userName_);
-		 * ScreenRegion sr = screen.wait(text, 5000);
-		 * assertNotNull("User Name was not found on the screen", sr); looking
-		 * for search field image
-		 */
+
 		assertScreenRegionForImage(Patterns.SearchFieldImage,
 				"Search field was not found on the screen", true);
 	}
