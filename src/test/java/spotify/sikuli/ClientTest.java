@@ -44,11 +44,10 @@ public class ClientTest {
 	private String loginFailedMessage_;
 	private String validLogin_;
 	private String password_;
-
+	private String userName_;
 	private String[] searchTerms_;
 	private String wrongSearchTerm_;
 
-	// path to Spotify Application
 	private String pathToApp;
 
 	private ScreenRegion screen;
@@ -73,6 +72,7 @@ public class ClientTest {
 				.getProperty(TestProperties.LOGIN_FAILED_MESSAGE);
 		validLogin_ = prop.getProperty(TestProperties.VALID_LOGIN);
 		password_ = prop.getProperty(TestProperties.PASSWORD);
+		userName_ = prop.getProperty(TestProperties.USER_NAME);
 		wrongSearchTerm_ = prop.getProperty(TestProperties.WRONG_SEARCH_TEAM);
 		searchTerms_ = prop.getProperty(TestProperties.SEARCH_TERMS).split(",");
 
@@ -103,9 +103,15 @@ public class ClientTest {
 	public void verifyValidLoginScenario() {
 
 		loginUser(validLogin_, password_);
-
-		assertScreenRegionForImage(Patterns.SearchFieldImage,
+		ScreenRegion fieldRegion = assertScreenRegionForImage(
+				Patterns.SearchFieldImage,
 				"Search field was not found on the screen", true);
+		Rectangle r = fieldRegion.getBounds();
+		ScreenRegion newRegionForSearch = new DesktopScreenRegion(r.x, r.y,
+				screen.getBounds().width, r.height * 2);
+		TextTarget text = new TextTarget(userName_);
+		ScreenRegion suserNameRegion = newRegionForSearch.find(text);
+		assertNotNull("Username was not found", suserNameRegion);
 	}
 
 	@Test
@@ -138,7 +144,6 @@ public class ClientTest {
 
 	@Test
 	public void verifyPlayingSongsWorks() throws InterruptedException {
-
 		loginUser(validLogin_, password_);
 
 		processSearch(searchTerms_[0]);
@@ -266,6 +271,6 @@ public class ClientTest {
 			keyboardCombination(Key.ALT, Key.F4);
 
 		}
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 	}
 }

@@ -1,5 +1,10 @@
 package spotify.sikuli;
+import java.awt.Rectangle;
 import java.net.URL;
+
+import org.sikuli.api.DesktopScreenRegion;
+import org.sikuli.api.ScreenRegion;
+import org.sikuli.api.TextTarget;
 
 
 public class Patterns {
@@ -13,5 +18,4 @@ public class Patterns {
 	static final URL PauseButtonImage = Patterns.class.getResource("./pause_button.png");
 	static final URL EmptySearchImage = Patterns.class.getResource("./empty_search.png");
 	static final URL StarIcon = Patterns.class.getResource("./star_and_share.png");
-
 }
